@@ -1,104 +1,176 @@
-*{
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Global Styles */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: 'Roboto', sans-serif;
 }
 
-body{
-    background-color: rgb(89, 90, 106);
-    color:white;
+body {
+    background-color: #121212;
+    color: #E0E0E0;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.container{
+.container {
+    /* Main container styling to match your HTML */
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    background-color: rgb(69, 64, 64);
-    padding: 20px;
-    border-radius: 5px;
-    width: 50%;
-    max-width: 600px;
+    gap: 25px;
+    background-color: #1E1E1E;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-h1{
-    font-size: 2rem;
+h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
 }
 
-.user-container{
+/* User Input Section */
+.user-container {
     display: flex;
     flex-direction: column;
+    gap: 15px;
+}
+
+.user-input-container {
+    display: flex;
     gap: 10px;
-    justify-content: start;
 }
 
-.user-input-container{
+#user-input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: #2D2D2D;
+    border: 1px solid #3A3A3A;
+    color: #E0E0E0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#user-input:focus {
+    border-color: #64FFDA; /* Neon green focus color */
+}
+
+#search-btn {
+    padding: 12px 25px;
+    border-radius: 8px;
+    background-color: #64FFDA;
+    color: #121212;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#search-btn:hover {
+    background-color: #55EED0;
+    transform: translateY(-2px);
+}
+
+/* Progress Circles Section */
+.stats-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 20px;
 }
 
-#user-input{
-    width: 80%;
-    padding: 0.4rem;
-    border-radius: 5px;
+.progress {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-#search-btn{
-    padding: 0.4rem;
-    border-radius: 5px;
-}
-
-.circle{
-    width: 120px;
-    height: 120px;
+.circle {
+    /* Common styles for all circle elements */
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
-    border: 4px solid #299f5d;
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 1 rem;
-    color: white;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.circle span {
+    font-size: 1.5rem;
     font-weight: 700;
-    background: conic-gradient(#299f5d var(--progress-degree, 0%), #283a2e 0%);
-    flex-direction: column;
-}
-.circle span{
-    position: relative;
-    z-index: 2;
+    margin-bottom: 5px;
 }
 
-.progress{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
-    gap: 10px;
+.circle p {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #B0B0B0;
 }
 
-.stats-cards{
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: space-evenly;
+/* Individual Progress Circle Colors */
+.easy-progress {
+    border: 4px solid #5cb85c;
+    background: conic-gradient(#5cb85c var(--progress-degree, 0%), #2D2D2D 0%);
 }
 
-h4{
-    font-size: 1rem;
+.easy-progress span {
+    color: #5cb85c;
 }
 
-.card{
-    background-color: rgb(230, 146, 44);
-    width: 40%;
-    max-width: 290px;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 1rem;
-    min-height: 4rem;
+.medium-progress {
+    border: 4px solid #f0ad4e;
+    background: conic-gradient(#f0ad4e var(--progress-degree, 0%), #2D2D2D 0%);
+}
+
+.medium-progress span {
+    color: #f0ad4e;
+}
+
+.hard-progress {
+    border: 4px solid #d9534f;
+    background: conic-gradient(#d9534f var(--progress-degree, 0%), #2D2D2D 0%);
+}
+
+.hard-progress span {
+    color: #d9534f;
+}
+
+/* Stats Cards Section */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    /* Assuming you'll add this class with JS */
+    background-color: #2D2D2D;
+    color: #E0E0E0;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card h4 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: #64FFDA;
 }
