@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
 
-
     const searchButton = document.getElementById("search-btn");
     const usernameInput = document.getElementById("user-input");
     const statsContainer = document.querySelector(".stats-container");
@@ -11,30 +10,30 @@ document.addEventListener("DOMContentLoaded", function() {
     const mediumLabel = document.getElementById("medium-label");
     const hardLabel = document.getElementById("hard-label");
     const cardStatsContainer = document.querySelector(".stats-cards");
+    const errorMessage = document.getElementById("error-message"); // Get the error message element
 
-    //return true or false based on a regex
+    // Validation no longer uses alert()
     function validateUsername(username) {
-        if(username.trim() === "") {
-            alert("Username should not be empty");
+        errorMessage.textContent = ""; // Clear previous errors
+        if (username.trim() === "") {
+            errorMessage.textContent = "Username should not be empty.";
             return false;
         }
         const regex = /^[a-zA-Z0-9_-]{1,15}$/;
-        const isMatching = regex.test(username);
-        if(!isMatching) {
-            alert("Invalid Username");
+        if (!regex.test(username)) {
+            errorMessage.textContent = "Invalid username format.";
+            return false;
         }
-        return isMatching;
+        return true;
     }
 
     async function fetchUserDetails(username) {
-
-        try{
+        errorMessage.textContent = ""; // Clear error on new search
+        try {
             searchButton.textContent = "Searching...";
             searchButton.disabled = true;
-            //statsContainer.classList.add("hidden");
 
-            // const response = await fetch(url);
-            const proxyUrl = 'https://cors-anywhere.herokuapp.com/' 
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
             const targetUrl = 'https://leetcode.com/graphql/';
             
             const myHeaders = new Headers();
@@ -43,78 +42,99 @@ document.addEventListener("DOMContentLoaded", function() {
             const graphql = JSON.stringify({
                 query: "\n    query userSessionProgress($username: String!) {\n  allQuestionsCount {\n    difficulty\n    count\n  }\n  matchedUser(username: $username) {\n    submitStats {\n      acSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n      totalSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n    }\n  }\n}\n    ",
                 variables: { "username": `${username}` }
-            })
+            });
             const requestOptions = {
                 method: "POST",
                 headers: myHeaders,
                 body: graphql,
             };
 
-            const response = await fetch(proxyUrl+targetUrl, requestOptions);
-            if(!response.ok) {
-                throw new Error("Unable to fetch the User details");
-            }
+            const response = await fetch(proxyUrl + targetUrl, requestOptions);
             const parsedData = await response.json();
-            console.log("Logging data: ", parsedData) ;
 
+            // Check for errors returned by the GraphQL API (e.g., user not found)
+            if (parsedData.errors) {
+                throw new Error("User not found or LeetCode API error.");
+            }
+            
             displayUserData(parsedData);
-        }
-        catch(error) {
-            statsContainer.innerHTML = `<p>${error.message}</p>`
-        }
-        finally {
+
+        } catch (error) {
+            // Update the error message element instead of the whole container
+            errorMessage.textContent = error.message;
+            // Clear old stats if a new search fails
+            cardStatsContainer.innerHTML = "";
+            updateProgress(0, 1, easyLabel, easyProgressCircle);
+            updateProgress(0, 1, mediumLabel, mediumProgressCircle);
+            updateProgress(0, 1, hardLabel, hardProgressCircle);
+        } finally {
             searchButton.textContent = "Search";
             searchButton.disabled = false;
         }
     }
 
     function updateProgress(solved, total, label, circle) {
-        const progressDegree = (solved/total)*100;
+        // Avoid division by zero if a category has 0 questions
+        const progressDegree = total > 0 ? (solved / total) * 100 : 0;
         circle.style.setProperty("--progress-degree", `${progressDegree}%`);
         label.textContent = `${solved}/${total}`;
     }
 
-
+    // Rewritten to be more robust and includes the class name fix
     function displayUserData(parsedData) {
-        const totalQues = parsedData.data.allQuestionsCount[0].count;
-        const totalEasyQues = parsedData.data.allQuestionsCount[1].count;
-        const totalMediumQues = parsedData.data.allQuestionsCount[2].count;
-        const totalHardQues = parsedData.data.allQuestionsCount[3].count;
+        errorMessage.textContent = ""; // Clear any previous errors on success
+        
+        const allQuestions = parsedData.data.allQuestionsCount;
+        const userSubmissions = parsedData.data.matchedUser.submitStats.acSubmissionNum;
+        const totalSubmissions = parsedData.data.matchedUser.submitStats.totalSubmissionNum;
 
-        const solvedTotalQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[0].count;
-        const solvedTotalEasyQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[1].count;
-        const solvedTotalMediumQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[2].count;
-        const solvedTotalHardQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[3].count;
+        // Helper function to safely find data for a specific difficulty
+        const findByDifficulty = (arr, difficulty) => arr.find(item => item.difficulty === difficulty) || { count: 0, submissions: 0 };
 
-        updateProgress(solvedTotalEasyQues, totalEasyQues, easyLabel, easyProgressCircle);
-        updateProgress(solvedTotalMediumQues, totalMediumQues, mediumLabel, mediumProgressCircle);
-        updateProgress(solvedTotalHardQues, totalHardQues, hardLabel, hardProgressCircle);
+        // Total Questions
+        const totalEasy = findByDifficulty(allQuestions, "Easy").count;
+        const totalMedium = findByDifficulty(allQuestions, "Medium").count;
+        const totalHard = findByDifficulty(allQuestions, "Hard").count;
 
+        // Solved Questions
+        const solvedEasy = findByDifficulty(userSubmissions, "Easy").count;
+        const solvedMedium = findByDifficulty(userSubmissions, "Medium").count;
+        const solvedHard = findByDifficulty(userSubmissions, "Hard").count;
+
+        // Update Progress Circles
+        updateProgress(solvedEasy, totalEasy, easyLabel, easyProgressCircle);
+        updateProgress(solvedMedium, totalMedium, mediumLabel, mediumProgressCircle);
+        updateProgress(solvedHard, totalHard, hardLabel, hardProgressCircle);
+
+        // Card Data
         const cardsData = [
-            {label: "Overall Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[0].submissions },
-            {label: "Overall Easy Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[1].submissions },
-            {label: "Overall Medium Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[2].submissions },
-            {label: "Overall Hard Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[3].submissions },
+            { label: "Total Submissions", value: findByDifficulty(totalSubmissions, "All").submissions },
+            { label: "Easy Submissions", value: findByDifficulty(totalSubmissions, "Easy").submissions },
+            { label: "Medium Submissions", value: findByDifficulty(totalSubmissions, "Medium").submissions },
+            { label: "Hard Submissions", value: findByDifficulty(totalSubmissions, "Hard").submissions },
         ];
-
-        console.log("card ka data: " , cardsData);
-
+        
+        // Display Cards (with the "stat-card" class name fix)
         cardStatsContainer.innerHTML = cardsData.map(
-            data => 
-                    `<div class="card">
+            data =>
+                `<div class="stat-card"> 
                     <h4>${data.label}</h4>
                     <p>${data.value}</p>
-                    </div>`
-        ).join("")
-
+                 </div>`
+        ).join("");
     }
 
     searchButton.addEventListener('click', function() {
         const username = usernameInput.value;
-        console.log("logggin username: ", username);
-        if(validateUsername(username)) {
+        if (validateUsername(username)) {
             fetchUserDetails(username);
         }
-    })
+    });
 
-})
+    // Allow pressing Enter to search
+    usernameInput.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            searchButton.click();
+        }
+    });
+});
