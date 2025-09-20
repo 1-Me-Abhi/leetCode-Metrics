@@ -131,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Allow pressing Enter to search
     usernameInput.addEventListener('keyup', function(event) {
         if (event.key === 'Enter') {
             searchButton.click();
